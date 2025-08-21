@@ -9,4 +9,4 @@ spec:
     app: tiny-web-app
   ports:
     - port: 80
-      targetPort: 9999  # mismatch with deployment
+      targetPort: 4567 # updated the port

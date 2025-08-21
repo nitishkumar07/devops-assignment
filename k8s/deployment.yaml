@@ -10,20 +10,48 @@ spec:
       app: tiny-web-app
   template:
     metadata:
+      annotations:
+      # Vault Agent Injector setup to inject secrets into the pod
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/env: "true" # Converts injected files to environment variables
+        # Inject the secret from Vault and store it in a file named config.env
+        vault.hashicorp.com/agent-inject-secret-config.env: "secret/webappsecret" 
+        vault.hashicorp.com/agent-inject-template-config.env: |
+          {{- with secret "secret/webappsecret" -}}
+          SECRET_KEY="{{ .Data.data.SECRET_KEY }}"
+          DB_PASSWORD="{{ .Data.data.DB_PASSWORD }}"
+          APP_MESSAGE="{{ .Data.data.APP_MESSAGE }}"
+          {{- end }}
+        vault.hashicorp.com/role: "vault-role" # Role associated with Vault to allow secret access
       labels:
         app: tiny-web-app
     spec:
+      serviceAccountName: vault-serviceaccount # Service account with Vault access
       containers:
         - name: tiny-web-app
-          image: ghcr.io/example/tiny-web-app:latest  # bad: latest
+          image: nitishkumar7/tiny-web-app:v1
           imagePullPolicy: Always
           ports:
-            - containerPort: 5000  # mismatch with app's 4567
-          env:
-            - name: SECRET_KEY
-              value: "super-secret-key"  # hardcoded secret
-            - name: DB_PASSWORD
-              value: "P@ssw0rd!"
-            - name: APP_MESSAGE
-              value: "Hello from K8s!"
-          # missing probes, resources, security context
+            - containerPort: 4567
+          securityContext:
+            runAsNonRoot: true # Ensure the container does not run as root (security best practice)
+            runAsUser: 1000 # Use a non-root user (ID 1000)
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: "100m" # Request 100 milliCPU units
+              memory: "128Mi" # Request 128Mi of memory
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+          # Liveness probe checks if the app is still running and responding
+            httpGet:
+              path: /
+              port: 4567
+            initialDelaySeconds: 10
+            periodSeconds: 10 # Perform the check every 10 seconds
+          
+          
+
