@@ -21,14 +21,15 @@ COPY app ./src_code
 FROM node:18-bullseye
 
 # Creating a non root user
-RUN useradd -m dev
+RUN useradd -m -u 1001 dev
 
 WORKDIR /opt/runtime
 
 COPY --from=builder /src/app/node_modules ./node_modules
 COPY --from=builder /src/app/src_code ./app
 
-RUN chown -R dev:dev /opt/runtime
+# 'dev' user has ownership of the runtime files
+RUN chown -R dev:dev /opt/runtime  
 
 WORKDIR /opt/runtime/app
 
@@ -36,5 +37,7 @@ USER dev
 
 EXPOSE 4567
 
-# I have only copied only the content of app in build stage so path is correct
-CMD ["node", "server.js"]
+# Use 'node' as the base command to start the application
+ENTRYPOINT ["node"] 
+CMD ["server.js"]
+
