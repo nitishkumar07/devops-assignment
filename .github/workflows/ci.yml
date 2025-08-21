@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build Docker image
+        run: docker build -t tiny-web-app:latest .
+
+      - name: Run container
+        run: |
+          docker run -d --rm --name tiny -p 8080:1234 tiny-web-app:latest
+          sleep 3
+
+      - name: Smoke test
+        run: curl -fsS http://localhost:7777/status
+
+      - name: Login to registry
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login ghcr.io -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+
+      - name: Push image
+        run: |
+          docker tag tiny-web-app:latest ghcr.io/example/tiny-web-app:latest
+          docker push ghcr.io/example/tiny-web-app:latest

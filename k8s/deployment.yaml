@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tiny-web-app
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tiny-web-app
+  template:
+    metadata:
+      labels:
+        app: tiny-web-app
+    spec:
+      containers:
+        - name: tiny-web-app
+          image: ghcr.io/example/tiny-web-app:latest  # bad: latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000  # mismatch with app's 4567
+          env:
+            - name: SECRET_KEY
+              value: "super-secret-key"  # hardcoded secret
+            - name: DB_PASSWORD
+              value: "P@ssw0rd!"
+            - name: APP_MESSAGE
+              value: "Hello from K8s!"
+          # missing probes, resources, security context

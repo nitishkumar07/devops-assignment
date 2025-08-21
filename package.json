@@ -1,0 +1,12 @@
+{
+  "name": "tiny-web-app",
+  "version": "1.0.0",
+  "description": "Intentionally rough tiny web app for DevOps fix-it assignment (AI-resistant)",
+  "main": "app/server.js",
+  "scripts": {
+    "start": "node app/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
