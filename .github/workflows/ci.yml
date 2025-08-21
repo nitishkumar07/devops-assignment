@@ -10,7 +10,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu:22.04
     env:
-      IMAGE_NAME: nitishkumar7/tiny-web-app
+      IMAGE_NAME: nitishkumar7/tiny-web-app # # ghcr.io/example/tiny-web-app
       IMAGE_TAG: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
@@ -18,9 +18,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+      
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install deps
-        run: npm ci
+        run: npm cid
 
       - name: Build Docker image
         run: |
@@ -31,7 +39,7 @@ jobs:
       - name: Run container
         run: |
           docker run -d --rm --name tiny -p 8080:4567 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          sleep 10
+          sleep 5
 
       - name: Smoke test
         run: curl -fsS http://localhost:8080/status
