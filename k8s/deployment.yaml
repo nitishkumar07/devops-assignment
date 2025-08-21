@@ -29,7 +29,7 @@ spec:
       serviceAccountName: vault-serviceaccount # Service account with Vault access
       containers:
         - name: tiny-web-app
-          image: nitishkumar7/tiny-web-app:v1
+          image: nitishkumar7/tiny-web-app:v1 # ghcr.io/example/tiny-web-app:v1
           imagePullPolicy: Always
           ports:
             - containerPort: 4567
@@ -45,13 +45,6 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
-          livenessProbe:
-          # Liveness probe checks if the app is still running and responding
-            httpGet:
-              path: /
-              port: 4567
-            initialDelaySeconds: 10
-            periodSeconds: 10 # Perform the check every 10 seconds
           
           
 
